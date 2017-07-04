@@ -12,13 +12,32 @@ TODO: Do a similar one but for pods
 
 import os
 from kubernetes import client, config
-config.load_kube_config(
-    os.path.join(os.environ["HOME"], '.kube/config.qa.eu'))
 
-v1 = client.CoreV1Api()
 
-pod_list = v1.list_namespaced_pod("default")
-for pod in pod_list.items:
+
+def load_configs():
+  list_configs = []
+  configpath = os.path.join(os.environ["HOME"], '.kube')
+  for file in os.listdir(configpath):
+    if file.startswith("config."):
+      list_configs.append(os.path.join(configpath, file))
+
+  return list_configs
+
+def show_allpods(env):
+  print('--------------> ' + env)
+  #TODO: This does not update itself
+  config.load_kube_config(env)
+
+  v1 = client.CoreV1Api()
+
+  pod_list = v1.list_namespaced_pod("default")
+  for pod in pod_list.items:
     print("%s\t%s\t%s" % (pod.metadata.name,
                           pod.status.phase,
                           pod.status.pod_ip))
+
+
+for env in load_configs():
+  show_allpods(env)
+
