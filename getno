@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 ''' Script to find out details of a node, given its name
 - Looks for the node across all our stacks
-- Shows Pods running on it, First the ones with problems
+- Shows nodes running on it, First the ones with problems
 
 So far I just got the first, unrelated example, taken from
 https://www.ianlewis.org/en/quick-look-kubernetes-python-client
 
 TODO: Get this script to work fine
-TODO: Do a similar one but for pods
+TODO: Do a similar one but for nodes
 '''
 
 import os
@@ -24,20 +24,20 @@ def load_configs():
 
   return list_configs
 
-def show_allpods(env):
+def show_allnodes(env):
   # TODO: not need this print
   print('--------------> ' + env)
 
   currclient = client.CoreV1Api(
         api_client=config.new_client_from_config(env))
 
-  pod_list = currclient.list_pod_for_all_namespaces()
-  for pod in pod_list.items:
-    print("%s\t%s\t%s" % (pod.metadata.name,
-                          pod.status.phase,
-                          pod.status.pod_ip))
+  node_list = currclient.list_node()
+  for node in node_list.items:
+    print("%s\t%s" % (node.metadata.name,
+                      node.status.conditions
+                          ))
 
 
 for env in load_configs():
-  show_allpods(env)
+  show_allnodes(env)
 
