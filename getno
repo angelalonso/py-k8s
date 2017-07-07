@@ -6,13 +6,14 @@
 So far I just got the first, unrelated example, taken from
 https://www.ianlewis.org/en/quick-look-kubernetes-python-client
 
-TODO: Get this script to work fine
+TODO: Get this script to only get info from a given node, or all when no parameter is received
 TODO: Do a similar one but for nodes
 '''
 
+import argparse
 import os
+import sys
 from kubernetes import client, config
-
 
 
 def load_configs():
@@ -23,6 +24,7 @@ def load_configs():
       list_configs.append(os.path.join(configpath, file))
 
   return list_configs
+
 
 def show_allnodes(env):
   # TODO: not need this print
@@ -38,6 +40,24 @@ def show_allnodes(env):
                           ))
 
 
-for env in load_configs():
-  show_allnodes(env)
+def show_allpods(env, nodename):
+  currclient = client.CoreV1Api(
+        api_client=config.new_client_from_config(env))
+
+  node_list = currclient.list_node()
+  for node in node_list.items:
+    if node.metadata.name == nodename:
+      print("%s\t%s" % (node.metadata.name,
+                        node.status.conditions
+                          ))
+
+
+if __name__ == '__main__':
+  try:
+    itemname = sys.argv[1]
+    for env in load_configs():
+      show_allpods(env, itemname)
+  except IndexError:
+    for env in load_configs():
+      show_allnodes(env)
 
